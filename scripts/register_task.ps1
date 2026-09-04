@@ -1,4 +1,4 @@
-# 註冊 Windows 工作排程器，每 30 分鐘自動抓一次新文章並翻譯/解析。
+﻿# 註冊 Windows 工作排程器，每 30 分鐘自動抓一次新文章並翻譯/解析。
 # 用 PowerShell 執行:
 #   powershell -ExecutionPolicy Bypass -File .\scripts\register_task.ps1
 

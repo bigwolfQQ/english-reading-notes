@@ -8,7 +8,7 @@ import re
 from google import genai
 from google.genai import errors
 
-_DEFAULT_MODEL = "gemini-2.5-flash"
+_DEFAULT_MODEL = "gemini-3.6-flash"
 
 PROMPT_TEMPLATE = """你是專門幫台灣英語學習者精讀英文新聞的老師。以下是一篇英文新聞文章，請完成三件事：
 

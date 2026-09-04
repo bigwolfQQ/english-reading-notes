@@ -1,4 +1,4 @@
-# 註冊 Windows 工作排程器，讓網頁介面在你一登入 Windows 就自動啟動、常駐在背景，
+﻿# 註冊 Windows 工作排程器，讓網頁介面在你一登入 Windows 就自動啟動、常駐在背景，
 # 這樣手機隨時可以連進來讀文章。
 # 用 PowerShell 執行:
 #   powershell -ExecutionPolicy Bypass -File .\scripts\register_web_task.ps1

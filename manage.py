@@ -3,6 +3,7 @@
 
 用法範例:
   python manage.py fetch                  # 手動抓一次新文章、翻譯/解析
+  python manage.py retry                  # 重試之前失敗的文章
   python manage.py list                   # 列出資料庫裡的文章
   python manage.py list --all             # 含處理中/失敗的文章
   python manage.py test-translate         # 測試 Gemini API 是否設定成功
@@ -25,6 +26,23 @@ def cmd_fetch(_args):
 
     max_articles = int(os.environ.get("MAX_ARTICLES_PER_RUN", "8"))
     processed = check_new.process_pending(max_articles)
+    print(f"完成翻譯/解析 {processed} 篇" if processed else "沒有文章需要處理")
+
+    remaining = storage.count_pending()
+    if remaining:
+        print(f"還有 {remaining} 篇排隊，留到下次執行 `python manage.py fetch` 繼續處理")
+
+
+def cmd_retry(_args):
+    check_new._load_env_file()
+    requeued = storage.requeue_errors()
+    if not requeued:
+        print("沒有失敗的文章需要重試")
+        return
+    print(f"把 {requeued} 篇失敗的文章重新排入處理佇列")
+
+    max_articles = int(os.environ.get("MAX_ARTICLES_PER_RUN", "8"))
+    processed = check_new.process_pending(max(requeued, max_articles))
     print(f"完成翻譯/解析 {processed} 篇" if processed else "沒有文章需要處理")
 
     remaining = storage.count_pending()
@@ -78,6 +96,10 @@ def main():
     sub = parser.add_subparsers(dest="command", required=True)
 
     sub.add_parser("fetch", help="抓取新文章並翻譯/解析").set_defaults(func=cmd_fetch)
+
+    sub.add_parser(
+        "retry", help="把之前處理失敗的文章（例如 API 暫時性錯誤）重新排入處理"
+    ).set_defaults(func=cmd_retry)
 
     p_list = sub.add_parser("list", help="列出文章")
     p_list.add_argument("--limit", type=int, default=20)

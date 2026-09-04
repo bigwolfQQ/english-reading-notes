@@ -66,6 +66,14 @@ def insert_pending_with_body(source_key, source_name, title_en, body_en, fetched
         return cur.lastrowid
 
 
+def requeue_errors() -> int:
+    """把處理失敗的文章重新排回 pending（例如 API 暫時性錯誤），回傳重新排入的篇數。"""
+    with _connect() as conn:
+        cur = conn.execute("UPDATE articles SET status='pending', error_message=NULL WHERE status='error'")
+        conn.commit()
+        return cur.rowcount
+
+
 def list_pending(limit: int) -> list:
     with _connect() as conn:
         rows = conn.execute(
