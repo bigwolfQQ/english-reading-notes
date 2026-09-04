@@ -1,13 +1,14 @@
 """
-用 Claude API 把一篇英文文章翻譯成繁體中文，並產出單字解析、文法重點。
+用 Google Gemini API 把一篇英文文章翻譯成繁體中文，並產出單字解析、文法重點。
 """
 import json
 import os
 import re
 
-from anthropic import Anthropic
+from google import genai
+from google.genai import errors
 
-_DEFAULT_MODEL = "claude-sonnet-5"
+_DEFAULT_MODEL = "gemini-2.5-flash"
 
 PROMPT_TEMPLATE = """你是專門幫台灣英語學習者精讀英文新聞的老師。以下是一篇英文新聞文章，請完成三件事：
 
@@ -42,27 +43,30 @@ class AnalyzeError(RuntimeError):
     pass
 
 
-def _client() -> Anthropic:
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+def _client() -> genai.Client:
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key or "請貼上" in api_key:
-        raise AnalyzeError("尚未設定 ANTHROPIC_API_KEY，請先在 config/.env 填入 Claude API key")
-    return Anthropic(api_key=api_key)
+        raise AnalyzeError("尚未設定 GEMINI_API_KEY，請先在 config/.env 填入 Gemini API key")
+    return genai.Client(api_key=api_key)
 
 
 def analyze(title: str, paragraphs: list) -> dict:
     """回傳 {"title_zh", "body": [{"en","zh"}...], "vocab": [...], "grammar": [...]}"""
     numbered = "\n".join(f"{i + 1}. {p}" for i, p in enumerate(paragraphs))
     prompt = PROMPT_TEMPLATE.format(title=title, numbered_paragraphs=numbered)
-    model = os.environ.get("CLAUDE_MODEL") or _DEFAULT_MODEL
+    model = os.environ.get("GEMINI_MODEL") or _DEFAULT_MODEL
 
     client = _client()
-    response = client.messages.create(
-        model=model,
-        max_tokens=8000,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    text = "".join(block.text for block in response.content if block.type == "text")
-    data = _parse_json(text)
+    try:
+        response = client.models.generate_content(
+            model=model,
+            contents=prompt,
+            config={"response_mime_type": "application/json"},
+        )
+    except errors.APIError as e:
+        raise AnalyzeError(f"Gemini API 呼叫失敗（{e.code}）：{e.message}") from e
+
+    data = _parse_json(response.text or "")
 
     paragraphs_zh = data.get("paragraphs_zh") or []
     if len(paragraphs_zh) != len(paragraphs) and paragraphs:
@@ -87,4 +91,4 @@ def _parse_json(text: str) -> dict:
     try:
         return json.loads(text)
     except json.JSONDecodeError as e:
-        raise AnalyzeError(f"Claude 回傳的內容不是有效 JSON：{e}") from e
+        raise AnalyzeError(f"Gemini 回傳的內容不是有效 JSON：{e}") from e

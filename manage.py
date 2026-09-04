@@ -5,7 +5,7 @@
   python manage.py fetch                  # 手動抓一次新文章、翻譯/解析
   python manage.py list                   # 列出資料庫裡的文章
   python manage.py list --all             # 含處理中/失敗的文章
-  python manage.py test-translate         # 測試 Claude API 是否設定成功
+  python manage.py test-translate         # 測試 Gemini API 是否設定成功
 """
 import argparse
 import os
@@ -66,7 +66,7 @@ def cmd_test_translate(_args):
             "would reduce reliance on imported fossil fuels.",
         ],
     )
-    print("成功！Claude API 設定沒問題。範例輸出：")
+    print("成功！Gemini API 設定沒問題。範例輸出：")
     print(f"  標題翻譯：{result['title_zh']}")
     print(f"  段落數：{len(result['body'])}")
     print(f"  單字數：{len(result['vocab'])}")
@@ -85,7 +85,7 @@ def main():
     p_list.set_defaults(func=cmd_list)
 
     sub.add_parser(
-        "test-translate", help="測試 Claude API 翻譯/解析是否設定成功"
+        "test-translate", help="測試 Gemini API 翻譯/解析是否設定成功"
     ).set_defaults(func=cmd_test_translate)
 
     p_export = sub.add_parser(

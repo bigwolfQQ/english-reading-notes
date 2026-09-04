@@ -1,6 +1,6 @@
 # 英文新聞學習平台
 
-自動抓 **Taipei Times** 和 **Focus Taiwan (CNA 英文新聞)** 的最新文章，用 Claude API 翻譯成繁體中文、
+自動抓 **Taipei Times** 和 **Focus Taiwan (CNA 英文新聞)** 的最新文章，用 Google Gemini API 翻譯成繁體中文、
 挑出值得學的單字/片語、標出文法重點，網頁上可以中英對照閱讀，還能用瀏覽器內建語音朗讀整篇或單句，
 方便邊聽邊練發音。
 
@@ -8,7 +8,8 @@
   **CommonWealth Magazine 英文站沒有列入自動抓取**——它掛了 Cloudflare 機器人驗證（連 curl 都被擋），
   也找不到官方 RSS，硬繞過防護不合適。想讀天下雜誌的文章，用網頁上的「手動貼上文章」功能，
   自己在瀏覽器打開文章複製貼上即可，一樣會跑完整的翻譯/單字/文法流程。
-- **翻譯與解析**：Claude API（預設 `claude-sonnet-5`），一次呼叫同時產出翻譯、單字表、文法重點。
+- **翻譯與解析**：Google Gemini API（預設 `gemini-2.5-flash`），一次呼叫同時產出翻譯、單字表、文法重點，
+  個人低用量通常落在 Google 的免費額度內，等於不用花錢。
 - **語音朗讀**：瀏覽器內建 Web Speech API，免費、不用金鑰，可調語速、選發音、逐段或整篇播放。
 - **執行方式**：Windows 工作排程器，預設每 30 分鐘檢查一次新文章。
 - **兩種介面**：私人版（`web/app.py`，完整原文+逐段翻譯+整篇朗讀，只有你自己用）跟
@@ -24,13 +25,13 @@ cd "D:\claude Agent\english-reading-coach"
 python -m pip install -r requirements.txt
 ```
 
-## 2. 設定 Claude API 金鑰
+## 2. 設定 Gemini API 金鑰
 
-1. 到 [Anthropic Console](https://console.anthropic.com/) → Settings → API Keys 申請一組 API key。
+1. 到 [Google AI Studio](https://aistudio.google.com/apikey) 用 Google 帳號登入，申請一組免費 API key。
 2. 打開 `config/.env.example`，另存成 `config/.env`，貼上金鑰：
 
 ```
-ANTHROPIC_API_KEY=你的金鑰
+GEMINI_API_KEY=你的金鑰
 ```
 
 3. 測試翻譯/解析是否正常：
@@ -39,13 +40,14 @@ ANTHROPIC_API_KEY=你的金鑰
 python manage.py test-translate
 ```
 
-看到「成功！Claude API 設定沒問題」就代表設定完成。
+看到「成功！Gemini API 設定沒問題」就代表設定完成。
 
-**費用**：每篇文章翻譯+單字+文法解析大約是一次 API 呼叫，依文章長度通常是幾千個 token，
-用 Sonnet 一篇成本約新台幣幾毛到一兩塊之間；想更省可以在 `.env` 把 `CLAUDE_MODEL` 改成
-`claude-haiku-4-5-20251001`，速度更快、費用低很多，翻譯品質略降但通常仍堪用。
+**費用**：Google AI Studio 的免費額度通常就足夠這種「一天幾篇文章」的個人用量，多半是 $0。
+如果之後用量變大超過免費額度，付費價格也很低（`gemini-2.5-flash` 大約每百萬 token 輸入
+US$0.3、輸出 US$2.5 左右）；想更省可以在 `.env` 把 `GEMINI_MODEL` 改成 `gemini-2.5-flash-lite`，
+速度更快、費用更低，翻譯品質略降但通常仍堪用。
 `.env` 裡的 `MAX_ARTICLES_PER_RUN`（預設 8）限制每次排程最多處理幾篇新文章，
-避免新聞一次湧入時 API 費用暴衝，處理不完的文章會留到下一次排程繼續。
+避免新聞一次湧入時超過免費額度或費用暴衝，處理不完的文章會留到下一次排程繼續。
 
 ## 3. 手動抓一次文章
 
@@ -53,7 +55,7 @@ python manage.py test-translate
 python manage.py fetch
 ```
 
-會先掃 RSS 找新文章，再把還沒翻譯的文章（含之前排隊但沒處理完的）送去 Claude 解析。
+會先掃 RSS 找新文章，再把還沒翻譯的文章（含之前排隊但沒處理完的）送去 Gemini 解析。
 
 ```powershell
 python manage.py list          # 列出目前所有文章跟狀態
@@ -161,13 +163,13 @@ public repo 也可以，只是要記得**不要**把 `data/articles.db`、`confi
 english-reading-coach/
   manage.py                    # 命令列管理工具（抓文章/列出/測試翻譯）
   config/
-    .env.example                # Claude API 金鑰範本，複製成 .env 後填入自己的值
+    .env.example                # Gemini API 金鑰範本，複製成 .env 後填入自己的值
   data/
     articles.db                  # SQLite 資料庫（文章、翻譯、單字、文法），不會進 git
   src/
     sources.py                    # RSS 來源清單 + 各網站內文擷取規則
     fetcher.py                     # 抓 RSS、下載文章頁面、擷取內文
-    analyzer.py                     # 呼叫 Claude API 做翻譯/單字/文法解析
+    analyzer.py                     # 呼叫 Gemini API 做翻譯/單字/文法解析
     storage.py                       # SQLite 存取
     check_new.py                      # 主邏輯：發現新文章 -> 翻譯解析 -> 存檔
     public_site.py                     # 匯出公開版靜態網頁（給 GitHub Pages 用）
@@ -191,7 +193,7 @@ english-reading-coach/
 
 - 目前只自動抓 Taipei Times（首頁 RSS）+ Focus Taiwan（RSS），想加更多分類/來源，
   在 `src/sources.py` 的 `SOURCES` 清單加一筆 `Source`，並寫一個對應網站結構的 `extract` 函式即可。
-- 翻譯/解析完全依賴 Claude 的輸出格式（要求回傳固定結構的 JSON），
+- 翻譯/解析完全依賴 Gemini 的輸出格式（要求回傳固定結構的 JSON），
   極少數情況下模型輸出格式跑掉會讓那篇文章翻譯失敗，`manage.py list --all` 可以看到失敗原因，
   直接重新執行 `python manage.py fetch` 會重試（失敗的文章目前不會自動重試，
   之後有需要可以加一個 `retry` 指令）。
