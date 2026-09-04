@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}手動貼上文章 - 英文新聞學習平台{% endblock %}
+{% block content %}
+<a href="{{ url_for('index') }}" class="back-link">← 回文章列表</a>
+
+<h1 class="page-title">手動貼上文章</h1>
+<p class="hint">
+  給 CommonWealth Magazine 這類有反爬蟲防護、抓不到全自動更新的網站用：
+  自己在瀏覽器打開文章，把標題和內文複製貼上，一樣會跑翻譯、單字解析、文法重點的完整流程。
+  內文請「每段換行」貼上，送出後可能要等幾秒到十幾秒（Claude 在翻譯/解析）。
+</p>
+
+<form method="post" class="manual-form">
+  <label>
+    文章來源（選填，例如「CommonWealth Magazine」）
+    <input type="text" name="source_name" placeholder="CommonWealth Magazine">
+  </label>
+  <label>
+    標題（英文）
+    <input type="text" name="title" required>
+  </label>
+  <label>
+    內文（英文，每段一行）
+    <textarea name="body" rows="16" required></textarea>
+  </label>
+  <button type="submit">送出並翻譯</button>
+</form>
+{% endblock %}

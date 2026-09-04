@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<p class="hint">
+  這裡只放文章標題翻譯、單字解析、文法重點的短句摘錄（附原文連結），不重製完整新聞內文——
+  完整文章請點進原始新聞網站閱讀。想要中英對照全文＋整篇朗讀跟讀練習，是我自己另外留著用的私人版本。
+</p>
+{% if not articles %}
+<p class="empty">目前還沒有文章。</p>
+{% endif %}
+<ul class="article-list">
+  {% for a in articles %}
+  <li class="article-card">
+    <a href="articles/{{ a.id }}.html">
+      <span class="source-tag">{{ a.source_name }}</span>
+      <h2>{{ a.title_zh or a.title_en }}</h2>
+      <p class="title-en">{{ a.title_en }}</p>
+      <p class="meta">{{ a.published_at }}</p>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

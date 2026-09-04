@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="toolbar">
+  <span>{{ articles|length }} 篇文章{% if pending_count %} · {{ pending_count }} 篇處理中{% endif %}</span>
+  {% if show_all %}
+    <a href="{{ url_for('index') }}" class="link-muted">只看已完成</a>
+  {% else %}
+    <a href="{{ url_for('index', all=1) }}" class="link-muted">顯示所有狀態（含處理中/失敗）</a>
+  {% endif %}
+</div>
+
+{% if not articles %}
+  <p class="empty">
+    目前沒有文章。在這台電腦上執行 <code>python manage.py fetch</code> 手動抓一次，
+    或設定排程自動抓取（見 README 的「自動排程」章節）。
+  </p>
+{% endif %}
+
+<ul class="article-list">
+  {% for a in articles %}
+  <li class="article-card status-{{ a.status }}{{ ' unread' if not a.is_read else '' }}">
+    <a href="{{ url_for('article_detail', article_id=a.id) }}">
+      <span class="source-tag">{{ a.source_name }}</span>
+      <h2>{{ a.title_zh or a.title_en }}</h2>
+      <p class="title-en">{{ a.title_en }}</p>
+      <p class="meta">
+        {{ (a.published_at or a.fetched_at)[:10] }}
+        {% if a.status != 'ready' %}· <span class="badge">{{ '處理中' if a.status == 'pending' else '失敗' }}</span>{% endif %}
+        {% if not a.is_read and a.status == 'ready' %}· <span class="badge new">未讀</span>{% endif %}
+      </p>
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

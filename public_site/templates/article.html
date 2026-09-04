@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title_en }} - 英文新聞學習筆記{% endblock %}
+{% block content %}
+<a href="../index.html" class="back-link">← 回文章列表</a>
+
+<article class="reader">
+  <p class="source-tag">{{ article.source_name }} · {{ article.published_at }}</p>
+  <h1>{{ article.title_zh }}</h1>
+  <p class="title-en">{{ article.title_en }}</p>
+  <p class="hint">
+    <a href="{{ article.url }}" target="_blank" rel="noopener">➜ 到{{ article.source_name }}閱讀完整原文</a>
+  </p>
+
+  <div class="controls">
+    <label class="ctrl-rate">語速
+      <input type="range" id="rate" min="0.6" max="1.4" step="0.1" value="0.9">
+      <span id="rate-value">0.9x</span>
+    </label>
+    <label class="ctrl-voice">發音
+      <select id="voice"></select>
+    </label>
+  </div>
+
+  {% if article.vocab %}
+  <section class="panel">
+    <h2>單字解析</h2>
+    <ul class="vocab-list">
+      {% for v in article.vocab %}
+      <li>
+        <button class="btn-say" type="button" data-text="{{ v.word }}" title="唸這個字">🔊</button>
+        <strong>{{ v.word }}</strong>
+        <span class="pos">{{ v.pos }}</span>
+        <span class="meaning">{{ v.meaning_zh }}</span>
+        <div class="example">
+          <button class="btn-say" type="button" data-text="{{ v.example_en }}" title="朗讀例句">🔊</button>
+          {{ v.example_en }}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if article.grammar %}
+  <section class="panel">
+    <h2>文法重點</h2>
+    <ul class="grammar-list">
+      {% for g in article.grammar %}
+      <li>
+        <strong>{{ g.point }}</strong>
+        <div class="example">
+          <button class="btn-say" type="button" data-text="{{ g.example_en }}" title="朗讀例句">🔊</button>
+          {{ g.example_en }}
+        </div>
+        <div class="explanation">{{ g.explanation_zh }}</div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</article>
+
+<script src="{{ static_prefix }}reader.js"></script>
+{% endblock %}

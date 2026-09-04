@@ -1,0 +1,20 @@
+# 環境變數 / 密鑰
+.env
+.env.*
+!.env.example
+
+# 私人資料庫（文章、翻譯、單字、文法），不進 git
+data/*.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 執行紀錄
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

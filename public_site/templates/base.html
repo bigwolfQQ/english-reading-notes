@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}英文新聞學習筆記{% endblock %}</title>
+  <link rel="stylesheet" href="{{ static_prefix }}style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="{{ root_prefix }}index.html" class="brand">📰 英文新聞學習筆記</a>
+  </header>
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

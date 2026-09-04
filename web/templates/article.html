@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ article.title_en }} - 英文新聞學習平台{% endblock %}
+{% block content %}
+<a href="{{ url_for('index') }}" class="back-link">← 回文章列表</a>
+
+<article class="reader" id="reader" data-paragraphs='{{ article.body|tojson }}'>
+  <p class="source-tag">{{ article.source_name }} · {{ (article.published_at or article.fetched_at)[:10] }}</p>
+  <h1>{{ article.title_zh }}</h1>
+  <p class="title-en">{{ article.title_en }}</p>
+
+  <div class="controls">
+    <button id="btn-play" type="button">▶ 播放整篇</button>
+    <button id="btn-pause" type="button" disabled>⏸ 暫停</button>
+    <button id="btn-stop" type="button" disabled>⏹ 停止</button>
+    <label class="ctrl-rate">語速
+      <input type="range" id="rate" min="0.6" max="1.4" step="0.1" value="0.9">
+      <span id="rate-value">0.9x</span>
+    </label>
+    <label class="ctrl-voice">發音
+      <select id="voice"></select>
+    </label>
+    <label class="toggle">
+      <input type="checkbox" id="toggle-zh" checked> 顯示中文翻譯
+    </label>
+  </div>
+
+  <div class="paragraphs" id="paragraphs">
+    {% for p in article.body %}
+    <div class="para" data-index="{{ loop.index0 }}">
+      <div class="para-en">
+        <button class="btn-para-play" type="button" data-index="{{ loop.index0 }}" title="朗讀這一段">🔊</button>
+        <span>{{ p.en }}</span>
+      </div>
+      <div class="para-zh">{{ p.zh }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if article.vocab %}
+  <section class="panel">
+    <h2>單字解析</h2>
+    <ul class="vocab-list">
+      {% for v in article.vocab %}
+      <li>
+        <button class="btn-say" type="button" data-text="{{ v.word }}" title="唸這個字">🔊</button>
+        <strong>{{ v.word }}</strong>
+        <span class="pos">{{ v.pos }}</span>
+        <span class="meaning">{{ v.meaning_zh }}</span>
+        <div class="example">{{ v.example_en }}</div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if article.grammar %}
+  <section class="panel">
+    <h2>文法重點</h2>
+    <ul class="grammar-list">
+      {% for g in article.grammar %}
+      <li>
+        <strong>{{ g.point }}</strong>
+        <div class="example">{{ g.example_en }}</div>
+        <div class="explanation">{{ g.explanation_zh }}</div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+</article>
+
+<script src="{{ url_for('static', filename='reader.js') }}"></script>
+{% endblock %}
