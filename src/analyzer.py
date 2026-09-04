@@ -8,7 +8,7 @@ import re
 from google import genai
 from google.genai import errors
 
-_DEFAULT_MODEL = "gemini-3.6-flash"
+_DEFAULT_MODEL = "gemini-3.5-flash-lite"
 
 PROMPT_TEMPLATE = """你是專門幫台灣英語學習者精讀英文新聞的老師。以下是一篇英文新聞文章，請完成三件事：
 
@@ -47,7 +47,9 @@ def _client() -> genai.Client:
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key or "請貼上" in api_key:
         raise AnalyzeError("尚未設定 GEMINI_API_KEY，請先在 config/.env 填入 Gemini API key")
-    return genai.Client(api_key=api_key)
+    # 一定要設 timeout：SDK 預設沒有逾時限制，網路卡住時單一呼叫會整個掛住，
+    # 排程排到下一次也不會啟動（MultipleInstances IgnoreNew），實測發生過。
+    return genai.Client(api_key=api_key, http_options={"timeout": 60000})
 
 
 def analyze(title: str, paragraphs: list) -> dict:
