@@ -1,8 +1,9 @@
 # 英文新聞學習平台
 
 自動抓 **Taipei Times** 和 **Focus Taiwan (CNA 英文新聞)** 的最新文章，用 Google Gemini API 翻譯成繁體中文、
-挑出值得學的單字/片語、標出文法重點，網頁上可以中英對照閱讀，還能用瀏覽器內建語音朗讀整篇或單句，
-方便邊聽邊練發音。
+挑出值得學的單字/片語（**選字以 TOEIC 多益測驗範圍為主**：職場溝通、商業、財經、行銷、人資、旅遊、
+辦公室日常等多益核心主題）、標出文法重點，網頁上可以中英對照閱讀，還能用瀏覽器內建語音朗讀整篇或單句，
+方便邊聽邊練發音。每個單字的例句都附「朗讀按鈕」+「繁體中文翻譯」，聽完馬上能對照確認自己聽懂多少。
 
 - **來源**：Taipei Times、Focus Taiwan 都有公開 RSS、文章內文伺服器端直接輸出，不用登入、沒有反爬蟲防護。
   **CommonWealth Magazine 英文站沒有列入自動抓取**——它掛了 Cloudflare 機器人驗證（連 curl 都被擋），
@@ -62,6 +63,9 @@ python manage.py fetch
 ```powershell
 python manage.py list          # 列出目前所有文章跟狀態
 python manage.py list --all    # 含處理中/失敗的文章
+python manage.py retry         # 重新處理之前失敗（error）的文章
+python manage.py reanalyze     # 把已完成的文章全部重新翻譯/解析一次
+                                # （改了 src/analyzer.py 的 prompt 規則後，用這個指令套用到舊文章）
 ```
 
 ## 4. 設定自動排程（Windows 工作排程器）

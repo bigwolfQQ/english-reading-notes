@@ -35,6 +35,7 @@
           <button class="btn-say" type="button" data-text="{{ v.example_en }}" title="朗讀例句">🔊</button>
           {{ v.example_en }}
         </div>
+        {% if v.example_zh %}<div class="example-zh">{{ v.example_zh }}</div>{% endif %}
       </li>
       {% endfor %}
     </ul>

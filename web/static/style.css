@@ -193,6 +193,13 @@ body {
   margin-top: 0.2rem;
 }
 
+.example-zh {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  margin-top: 0.1rem;
+  margin-left: 1.6rem;
+}
+
 .btn-say {
   border: none;
   background: none;

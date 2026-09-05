@@ -46,7 +46,11 @@
         <strong>{{ v.word }}</strong>
         <span class="pos">{{ v.pos }}</span>
         <span class="meaning">{{ v.meaning_zh }}</span>
-        <div class="example">{{ v.example_en }}</div>
+        <div class="example">
+          <button class="btn-say" type="button" data-text="{{ v.example_en }}" title="朗讀例句">🔊</button>
+          {{ v.example_en }}
+        </div>
+        {% if v.example_zh %}<div class="example-zh">{{ v.example_zh }}</div>{% endif %}
       </li>
       {% endfor %}
     </ul>

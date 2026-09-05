@@ -50,6 +50,22 @@ def cmd_retry(_args):
         print(f"還有 {remaining} 篇排隊，留到下次執行 `python manage.py fetch` 繼續處理")
 
 
+def cmd_reanalyze(_args):
+    check_new._load_env_file()
+    requeued = storage.requeue_ready()
+    if not requeued:
+        print("沒有已完成的文章可以重新解析")
+        return
+    print(f"把 {requeued} 篇已完成的文章重新排入處理佇列（用新的單字/文法規則重跑）")
+
+    processed = check_new.process_pending(requeued)
+    print(f"完成重新翻譯/解析 {processed} 篇" if processed else "沒有文章需要處理")
+
+    remaining = storage.count_pending()
+    if remaining:
+        print(f"還有 {remaining} 篇排隊，留到下次執行 `python manage.py fetch` 繼續處理")
+
+
 def cmd_list(args):
     articles = storage.list_articles(limit=args.limit, only_ready=not args.all)
     if not articles:
@@ -100,6 +116,10 @@ def main():
     sub.add_parser(
         "retry", help="把之前處理失敗的文章（例如 API 暫時性錯誤）重新排入處理"
     ).set_defaults(func=cmd_retry)
+
+    sub.add_parser(
+        "reanalyze", help="把已完成的文章重新排入處理，用目前的 prompt 規則重新產生翻譯/單字/文法"
+    ).set_defaults(func=cmd_reanalyze)
 
     p_list = sub.add_parser("list", help="列出文章")
     p_list.add_argument("--limit", type=int, default=20)

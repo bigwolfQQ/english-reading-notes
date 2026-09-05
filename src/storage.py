@@ -74,6 +74,15 @@ def requeue_errors() -> int:
         return cur.rowcount
 
 
+def requeue_ready() -> int:
+    """把已完成的文章重新排回 pending，用原本存的英文內文重新跑一次翻譯/解析
+    （例如調整過 prompt，想用新規則重新產生單字/文法）。回傳重新排入的篇數。"""
+    with _connect() as conn:
+        cur = conn.execute("UPDATE articles SET status='pending', error_message=NULL WHERE status='ready'")
+        conn.commit()
+        return cur.rowcount
+
+
 def list_pending(limit: int) -> list:
     with _connect() as conn:
         rows = conn.execute(
