@@ -7,6 +7,7 @@
 import datetime as dt
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -14,10 +15,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import analyzer
 import fetcher
+import public_site
 import storage
 from sources import SOURCE_BY_KEY, SOURCES
 
 ENV_PATH = Path(__file__).resolve().parent.parent / "config" / ".env"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 def _load_env_file():
@@ -82,6 +85,35 @@ def process_pending(max_articles: int) -> int:
     return processed
 
 
+def _run_git(*args) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        ["git", *args], cwd=PROJECT_ROOT, capture_output=True, text=True,
+    )
+
+
+def publish_public_site():
+    """匯出公開版網頁到 docs/，並自動 commit + push 到 GitHub Pages。"""
+    count = public_site.export()
+
+    status = _run_git("status", "--porcelain", "docs")
+    if not status.stdout.strip():
+        print("公開網頁內容沒有變化，跳過 commit/push")
+        return
+
+    _run_git("add", "docs")
+    commit = _run_git("commit", "-m", f"Update public site: {count} articles")
+    if commit.returncode != 0:
+        print(f"git commit 失敗：{commit.stderr.strip()}")
+        return
+
+    push = _run_git("push")
+    if push.returncode != 0:
+        print(f"git push 失敗（已 commit 在本機，之後可以手動 push）：{push.stderr.strip()}")
+        return
+
+    print(f"已將公開網頁（{count} 篇文章）推送到 GitHub Pages")
+
+
 def main():
     _load_env_file()
     max_articles = int(os.environ.get("MAX_ARTICLES_PER_RUN", "8"))
@@ -97,6 +129,9 @@ def main():
     remaining = storage.count_pending()
     if remaining:
         print(f"還有 {remaining} 篇排隊，留到下次排程處理")
+
+    if processed:
+        publish_public_site()
 
 
 if __name__ == "__main__":
